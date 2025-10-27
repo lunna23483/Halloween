@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>VERTICE EXTREMO — Halloween</title>
+  <style>
+    :root{
+      --bg:#06060a;
+      --red:#ff2b2b;
+      --neon:#8ef8ff;
+      --accent:#ff0057;
+      --text:#cfeef6;
+      --glass: rgba(255,255,255,0.03);
+      --mono: 'Courier New', Courier, monospace;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:linear-gradient(180deg,#000 0%, #050510 100%);font-family:var(--mono);color:var(--text);-webkit-font-smoothing:antialiased}
+    .center{display:flex;align-items:center;justify-content:center;height:100vh;padding:1rem}
+
+    /* pantalla inicial */
+    #start{
+      position:fixed;inset:0;background:radial-gradient(ellipse at center, rgba(0,0,0,.6), rgba(0,0,0,.85));z-index:50;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1rem;
+      -webkit-backdrop-filter: blur(4px);backdrop-filter:blur(4px);
+    }
+    .btn{
+      background:linear-gradient(90deg,#ff5a8a,#ff8a00);border:none;padding:.9rem 1.4rem;border-radius:12px;color:white;font-weight:800;font-size:16px;cursor:pointer;box-shadow:0 8px 30px rgba(255,90,138,.12);
+    }
+    .small{font-size:13px;opacity:.9}
+
+    /* device frame */
+    .device{width:100%;max-width:520px;border-radius:28px;padding:18px;background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);box-shadow:0 20px 90px rgba(0,0,0,.8);position:relative;overflow:hidden;border:1px solid rgba(255,255,255,.03)}
+    .screen{height:880px;max-height:78vh;background:linear-gradient(180deg,#020206,#04040a);border-radius:18px;padding:20px;position:relative;overflow:hidden;display:flex;flex-direction:column}
+    .status{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:12px;opacity:.8}
+    .bigmsg{flex:1;display:flex;align-items:center;justify-content:center;text-align:center;padding:1rem;flex-direction:column;gap:1rem}
+    .title{font-size:20px;letter-spacing:1px;color:var(--neon);text-transform:uppercase;text-shadow:0 0 12px rgba(142,248,255,.08)}
+    .err{font-size:34px;font-weight:900;color:var(--red);text-shadow:0 0 22px rgba(255,43,43,.12)}
+    .sub{opacity:.85;font-size:14px}
+
+    /* glitch overlay */
+    .glitch{
+      position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;opacity:.12;
+      background-image:repeating-linear-gradient(180deg, rgba(255,255,255,.02) 0 1px, transparent 1px 4px);
+      animation:glitchMove 6s linear infinite;
+    }
+    @keyframes glitchMove{0%{transform:translateY(0)}50%{transform:translateY(-6px)}100%{transform:translateY(0)}}
+
+    /* flicker strips */
+    .strip{position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.03),transparent);opacity:0.7;mix-blend-mode:overlay}
+    .strip.s1{top:22%}.strip.s2{top:58%}.strip.s3{top:76%}
+
+    /* fake progress */
+    .progress{width:80%;height:12px;background:rgba(255,255,255,0.04);border-radius:999px;overflow:hidden;border:1px solid rgba(255,255,255,.02)}
+    .bar{height:100%;width:0%;background:linear-gradient(90deg,#ff4b6a,#ffb86b);box-shadow:0 6px 20px rgba(255,75,106,.12)}
+    .log{font-size:13px;line-height:1.4;text-align:left;max-height:160px;overflow:hidden;padding:10px;border-radius:8px;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.02)}
+
+    /* modal scary */
+    .panic{
+      position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.6);z-index:60;backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:opacity .25s;
+    }
+    .panic.show{opacity:1;pointer-events:auto}
+    .panic .box{background:linear-gradient(180deg,#0a0000,#200000);padding:1.2rem;border-radius:12px;border:1px solid rgba(255,0,0,.12);text-align:center;max-width:420px;color:#ffdede}
+    .panic h2{font-size:28px;margin:0 0 .4rem}
+    .panic p{margin:0 0 .8rem}
+
+    /* scanline noise */
+    .noise{position:absolute;inset:0;opacity:.045;background-image:linear-gradient(0deg, rgba(255,255,255,.02) 0 1px, transparent 1px 3px);pointer-events:none}
+
+    /* bin tecnológico overlay */
+    .bin-text{
+      position:absolute;inset:0;padding:2rem;color:var(--neon);font-family:var(--mono);font-size:16px;white-space:pre-wrap;overflow:hidden;pointer-events:none;opacity:0;
+    }
+
+    .info{font-size:12px;opacity:.6;margin-top:8px;text-align:center}
+  </style>
+</head>
+<body>
+
+<!-- pantalla inicial -->
+<div id="start" aria-hidden="false">
+  <div style="text-align:center;max-width:420px;color:var(--text)">
+    <h1 style="margin:0 0 .25rem;font-size:20px">VERTICE EXTREMO — Simulador de fallo</h1>
+    <p class="small" style="margin:0 0 1rem">Toca la pantalla para iniciar la broma. (Permite pantalla completa y vibración si el navegador lo permite)</p>
+    <button id="go" class="btn">Tocar para asustar 👻</button>
+    <p class="small" style="margin-top:.8rem;opacity:.85">Usa con responsabilidad — no a desconocidos ni personas con problemas de salud.</p>
+  </div>
+</div>
+
+<div class="center">
+  <div class="device" role="region" aria-label="Simulador de fallo">
+    <div class="screen" id="screen">
+      <div class="status">
+        <div>🔋 98%  •  📶 4G</div>
+        <div id="clock">10:31</div>
+      </div>
+
+      <div class="bigmsg" id="stage">
+        <div class="title">Android System</div>
+        <div class="err" id="errText">SYSTEM CORRUPT</div>
+        <div class="sub" id="subText">Verificando integridad del kernel...</div>
+
+        <div style="width:100%;display:flex;gap:12px;justify-content:center;align-items:center;margin-top:12px">
+          <div class="progress" aria-hidden="true"><div class="bar" id="bar"></div></div>
+          <div style="width:92px;text-align:left;font-size:13px;color:var(--text);opacity:.9" id="pct">0%</div>
+        </div>
+
+        <div style="margin-top:14px;width:100%;display:flex;gap:12px">
+          <div class="log" id="log">Iniciando verificación del sistema de VERTICE EXTREMO...</div>
+        </div>
+      </div>
+
+      <div class="glitch" aria-hidden="true"></div>
+      <div class="noise" aria-hidden="true"></div>
+      <div class="strip s1"></div><div class="strip s2"></div><div class="strip s3"></div>
+      <div class="bin-text" id="binText"></div>
+
+      <div style="margin-top:auto;padding-top:8px">
+        <div class="info">VERTICE EXTREMO • NOCHE DE NODOS — 10.31.2025</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- modal -->
+<div class="panic" id="panic">
+  <div class="box">
+    <h2>ERROR CRÍTICO</h2>
+    <p>Alerta: Integridad comprometida. Restablecimiento en curso.</p>
+    <p style="font-weight:800;font-size:18px" id="countdown">3</p>
+  </div>
+</div>
+
+<script>
+const start = document.getElementById('start');
+const go = document.getElementById('go');
+const bar = document.getElementById('bar');
+const pct = document.getElementById('pct');
+const log = document.getElementById('log');
+const errText = document.getElementById('errText');
+const subText = document.getElementById('subText');
+const panic = document.getElementById('panic');
+const countdown = document.getElementById('countdown');
+const clock = document.getElementById('clock');
+const binText = document.getElementById('binText');
+
+// Reloj
+function updateClock(){
+  const d = new Date();
+  const hh = String(d.getHours()).padStart(2,'0');
+  const mm = String(d.getMinutes()).padStart(2,'0');
+  clock.textContent = hh+':'+mm;
+}
+updateClock();
+setInterval(updateClock, 30000);
+
+// vibración
+function vibratePattern(){ if(navigator.vibrate) navigator.vibrate([200,100,200,100,350]); }
+
+// fullscreen
+function enterFullscreen(){ const el = document.documentElement; if(el.requestFullscreen) el.requestFullscreen().catch(()=>{}); else if(el.webkitRequestFullscreen) el.webkitRequestFullscreen(); }
+
+function appendLog(text){ const ts = new Date().toLocaleTimeString(); log.textContent = text + "\\n" + log.textContent; }
+function setProgress(p){ bar.style.width = p + '%'; pct.textContent = Math.floor(p) + '%'; }
+
+function startSequence(){
+  start.style.display='none';
+  enterFullscreen();
+  vibratePattern();
+
+  let p = 0; appendLog('Verificación inicial de VERTICE EXTREMO...'); setProgress(3);
+
+  const phase1 = setInterval(()=>{
+    p += Math.random()*6 + 6;
+    if(p>28)p=28; setProgress(p);
+    if(Math.random()<0.25) appendLog('checksum OK — kernel stable');
+    if(p>=28){ clearInterval(phase1); phaseTwo(); }
+  },420);
+
+  function phaseTwo(){
+    appendLog('Anomalia detectada en /system/bin');
+    subText.textContent = 'Detectando módulos corruptos...';
+    errText.textContent = 'ERROR — MÓDULOS INESTABLES';
+    let p2 = 28;
+    const ph2 = setInterval(()=>{
+      p2 += Math.random()*5 +4; setProgress(p2);
+      if(Math.random()<0.3) appendLog('signature mismatch — archivo sospechoso');
+      if(p2>=62){ clearInterval(ph2); phaseThree(); }
+    },500);
+  }
+
+  function phaseThree(){
+    appendLog('Acceso no autorizado: sesión comprometida');
+    subText.textContent = 'Intentando contención...';
+    errText.textContent = 'SYSTEM CORRUPTION';
+    let flashes=0;
+    const flashInt=setInterval(()=>{
+      document.body.style.filter=(flashes%2===0)?'brightness(.45)':'brightness(1)';
+      vibratePattern(); flashes++;
+      if(flashes>8){ clearInterval(flashInt); document.body.style.filter=''; }
+    },220);
+
+    let p3=62;
+    const ph3=setInterval(()=>{
+      p3 += Math.random()*7 +6; setProgress(p3);
+      appendLog('Intento de reparación automática...');
+      if(p3>=92){ clearInterval(ph3); showPanic(); }
+    },450);
+  }
+
+  function showPanic(){
+    panic.classList.add('show');
+    let count=3; countdown.textContent=count;
+    const cd = setInterval(()=>{
+      count--; if(count<=0){ clearInterval(cd); countdown.textContent='—'; finalCorrupt(); }
+      else{ countdown.textContent=count; vibratePattern(); }
+    },900);
+  }
+
+  function finalCorrupt(){
+    errText.textContent='ALGO HA DESPERTADO';
+    subText.textContent='No apagues. No mires hacia atrás.';
+    appendLog('Proceso finalizado — integridad de VERTICE EXTREMO perdida.');
+    vibratePattern();
+    corruptScreenText();
+    startBinTextEffect();
+    setTimeout(()=>{ panic.classList.remove('show'); },5000);
+  }
+}
+
+// glitch de texto
+function corruptScreenText(){
+  const chars=['0','1','▒','░','▌','▀','█','◆'];
+  let arr=log.textContent.split('');
+  for(let i=0;i<200;i++){ arr[Math.floor(Math.random()*arr.length)]=chars[Math.floor(Math.random()*chars.length)]; }
+  log.textContent=arr.join('');
+  errText.textContent=errText.textContent.split('').map(c=>Math.random()<0.28?chars[Math.floor(Math.random()*chars.length)]:c).join('');
+}
+
+// texto estilo Bin Tecnológico
+const binMessage="La noche cae sobre los servidores de VERTICE EXTREMO. Una IP desconocida susurra en código, llamando a lo que no tiene forma. Cada archivo que abres es una puerta. Cada puerta, una boca. Sientes un zumbido detrás del cráneo — no es electricidad. Es memoria. Es hambre.";
+function startBinTextEffect(){
+  binText.style.opacity=1; let i=0;
+  function typeBin(){ if(i<=binMessage.length){ binText.textContent=binMessage.slice(0,i) + (Math.random()<0.5?'\u2588':''); i++; setTimeout(typeBin,16+Math.random()*90);} }
+  typeBin();
+}
+
+// iniciar secuencia
+go.addEventListener('click',()=>{ startSequence(); });
+document.addEventListener('keydown',(e)=>{ if(e.key==='Enter') startSequence(); });
+document.addEventListener('fullscreenchange',()=>{ if(!document.fullscreenElement){ start.style.display='flex'; } });
+</script>
+</body>
+</html>
+
+
